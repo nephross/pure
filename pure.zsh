@@ -143,15 +143,15 @@ prompt_pure_preprompt_render() {
 	# Set the path.
 	preprompt_parts+=('%F{${prompt_pure_colors[path]}}%~%f')
 
-	# Add Git branch
+  # Add Git branch and dirty status info.
 	typeset -gA prompt_pure_vcs_info
 	if [[ -n $prompt_pure_vcs_info[branch] ]]; then
-		preprompt_parts+=('%F{$git_color}${prompt_pure_vcs_info[branch]}%f')
-	fi
-  # Git dirty status
-  if [[ -n $prompt_pure_git_dirty ]]; then
-    preprompt_parts+=('%F{$prompt_pure_colors[git:color:dirty]}${prompt_pure_git_dirty}%f')
-  fi
+		preprompt_parts+=("%F{$git_color}"'${prompt_pure_vcs_info[branch]}%f%F{$prompt_pure_colors[git:dirty]}${prompt_pure_git_dirty}%f')
+fi
+  # # Git dirty status
+  # if [[ -n $prompt_pure_git_dirty ]]; then
+  #   preprompt_parts+=('%F{$prompt_pure_colors[git:color:dirty]}${prompt_pure_git_dirty}%f')
+  # fi
 	# Git pull/push arrows.
 	if [[ -n $prompt_pure_git_arrows ]]; then
 		preprompt_parts+=('%F{$prompt_pure_colors[git:arrow]}${prompt_pure_git_arrows}%f')
@@ -493,7 +493,7 @@ prompt_pure_async_callback() {
 			if (( code == 0 )); then
 				unset prompt_pure_git_dirty
 			else
-				typeset -g prompt_pure_git_dirty="×"
+				typeset -g prompt_pure_git_dirty=" ×"
 			fi
 
 			[[ $prev_dirty != $prompt_pure_git_dirty ]] && do_render=1
@@ -709,7 +709,7 @@ prompt_pure_setup() {
 		git:arrow            yellow
 		git:branch           green
 		git:branch:cached    red
-    git:color:dirty      red
+    git:dirty            red
 		host                 242
 		path                 cyan
 		prompt:error         red
