@@ -103,6 +103,16 @@ prompt_pure_preexec() {
 	export VIRTUAL_ENV_DISABLE_PROMPT=${VIRTUAL_ENV_DISABLE_PROMPT:-12}
 }
 
+# string length ignoring ansi escapes
+prompt_pure_string_length_to_var() {
+	local str=$1 var=$2 length
+	# perform expansion on str and check length
+	length=$(( ${#${(S%%)str//(\%([KF1]|)\{*\}|\%[Bbkf])}} ))
+
+	# store string length in variable as specified by caller
+	typeset -g "${var}"="${length}"
+}
+
 # Change the colors if their value are different from the current ones.
 prompt_pure_set_colors() {
 	local color_temp key value
@@ -128,14 +138,20 @@ prompt_pure_preprompt_render() {
 	# Initialize the preprompt array.
 	local -a preprompt_parts
 
+  preprompt_parts+='%F{${prompt_pure_colors[user]}}%n@%m%f'
+
 	# Set the path.
 	preprompt_parts+=('%F{${prompt_pure_colors[path]}}%~%f')
 
-	# Add Git branch and dirty status info.
+	# Add Git branch
 	typeset -gA prompt_pure_vcs_info
 	if [[ -n $prompt_pure_vcs_info[branch] ]]; then
-		preprompt_parts+=("%F{$git_color}"'${prompt_pure_vcs_info[branch]}${prompt_pure_git_dirty}%f')
+		preprompt_parts+=('%F{$git_color}${prompt_pure_vcs_info[branch]}%f')
 	fi
+  # Git dirty status
+  if [[ -n $prompt_pure_git_dirty ]]; then
+    preprompt_parts+=('%F{$prompt_pure_colors[git:color:dirty]}${prompt_pure_git_dirty}%f')
+  fi
 	# Git pull/push arrows.
 	if [[ -n $prompt_pure_git_arrows ]]; then
 		preprompt_parts+=('%F{$prompt_pure_colors[git:arrow]}${prompt_pure_git_arrows}%f')
@@ -145,6 +161,16 @@ prompt_pure_preprompt_render() {
 	[[ -n $prompt_pure_state[username] ]] && preprompt_parts+=($prompt_pure_state[username])
 	# Execution time.
 	[[ -n $prompt_pure_cmd_exec_time ]] && preprompt_parts+=('%F{$prompt_pure_colors[execution_time]}${prompt_pure_cmd_exec_time}%f')
+
+  local rpreprompt='%F{$prompt_pure_colors[node:version]}⬢ ${prompt_pure_node_version}%f'
+
+  integer preprompt_left_length preprompt_right_length space_length
+  prompt_pure_string_length_to_var "${preprompt_parts}" "preprompt_left_length"
+  prompt_pure_string_length_to_var "${rpreprompt}" "preprompt_right_length"
+  (( space_length = COLUMNS - preprompt_left_length - preprompt_right_length ))
+
+  preprompt_parts+="$(printf ' %.0s' {1..${space_length}})"
+  preprompt_parts+=$rpreprompt
 
 	local cleaned_ps1=$PROMPT
 	local -H MATCH MBEGIN MEND
@@ -325,6 +351,11 @@ prompt_pure_async_git_arrows() {
 	command git rev-list --left-right --count HEAD...@'{u}'
 }
 
+prompt_pure_async_node() {
+  setopt localoptions noshwordsplit
+	echo "$(PATH=$1 command node -v | cut -c2- )"
+}
+
 prompt_pure_async_tasks() {
 	setopt localoptions noshwordsplit
 
@@ -356,6 +387,8 @@ prompt_pure_async_tasks() {
 	unset MATCH MBEGIN MEND
 
 	async_job "prompt_pure" prompt_pure_async_vcs_info
+
+  async_job "prompt_pure" prompt_pure_async_node "$PATH"
 
 	# Only perform tasks inside a Git working tree.
 	[[ -n $prompt_pure_vcs_info[top] ]] || return
@@ -395,8 +428,8 @@ prompt_pure_check_git_arrows() {
 	setopt localoptions noshwordsplit
 	local arrows left=${1:-0} right=${2:-0}
 
-	(( right > 0 )) && arrows+=${PURE_GIT_DOWN_ARROW:-⇣}
-	(( left > 0 )) && arrows+=${PURE_GIT_UP_ARROW:-⇡}
+	(( right > 0 )) && arrows+=${PURE_GIT_DOWN_ARROW:-▼}
+	(( left > 0 )) && arrows+=${PURE_GIT_UP_ARROW:-▲}
 
 	[[ -n $arrows ]] || return
 	typeset -g REPLY=$arrows
@@ -460,7 +493,7 @@ prompt_pure_async_callback() {
 			if (( code == 0 )); then
 				unset prompt_pure_git_dirty
 			else
-				typeset -g prompt_pure_git_dirty="*"
+				typeset -g prompt_pure_git_dirty="×"
 			fi
 
 			[[ $prev_dirty != $prompt_pure_git_dirty ]] && do_render=1
@@ -496,6 +529,10 @@ prompt_pure_async_callback() {
 					;;
 			esac
 			;;
+    prompt_pure_async_node)
+      typeset -g prompt_pure_node_version=$output
+      do_render=1
+      ;;
 	esac
 
 	if (( next_pending )); then
@@ -668,17 +705,19 @@ prompt_pure_setup() {
 	# Set the colors.
 	typeset -gA prompt_pure_colors_default prompt_pure_colors
 	prompt_pure_colors_default=(
-		execution_time       yellow
-		git:arrow            cyan
-		git:branch           242
+		execution_time       blue
+		git:arrow            yellow
+		git:branch           green
 		git:branch:cached    red
+    git:color:dirty      red
 		host                 242
-		path                 blue
+		path                 cyan
 		prompt:error         red
-		prompt:success       magenta
-		user                 242
+		prompt:success       yellow
+		user                 magenta
 		user:root            default
 		virtualenv           242
+    node:version         green
 	)
 	prompt_pure_colors=("${(@kv)prompt_pure_colors_default}")
 
