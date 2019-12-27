@@ -147,21 +147,12 @@ prompt_pure_preprompt_render() {
   # Add Git branch and dirty status info.
 	typeset -gA prompt_pure_vcs_info
 	if [[ -n $prompt_pure_vcs_info[branch] ]]; then
-<<<<<<< HEAD
-		preprompt_parts+=("%F{$git_color}"'${prompt_pure_vcs_info[branch]}%f%F{$prompt_pure_colors[git:dirty]}${prompt_pure_git_dirty}%f')
-fi
-  # # Git dirty status
-  # if [[ -n $prompt_pure_git_dirty ]]; then
-  #   preprompt_parts+=('%F{$prompt_pure_colors[git:color:dirty]}${prompt_pure_git_dirty}%f')
-  # fi
-=======
 		local branch="%F{$git_color}"'${prompt_pure_vcs_info[branch]}'
 		if [[ -n $prompt_pure_vcs_info[action] ]]; then
 			branch+="|%F{$prompt_pure_colors[git:action]}"'$prompt_pure_vcs_info[action]'"%F{$git_color}"
 		fi
 		preprompt_parts+=("$branch""%F{$git_dirty_color}"'${prompt_pure_git_dirty}%f')
 	fi
->>>>>>> master
 	# Git pull/push arrows.
 	if [[ -n $prompt_pure_git_arrows ]]; then
 		preprompt_parts+=('%F{$prompt_pure_colors[git:arrow]}${prompt_pure_git_arrows}%f')
@@ -362,11 +353,12 @@ prompt_pure_async_git_arrows() {
 	command git rev-list --left-right --count HEAD...@'{u}'
 }
 
-<<<<<<< HEAD
+
 prompt_pure_async_node() {
   setopt localoptions noshwordsplit
 	echo "$(PATH=$1 command node -v | cut -c2- )"
-=======
+}
+
 # Try to lower the priority of the worker so that disk heavy operations
 # like `git status` has less impact on the system responsivity.
 prompt_pure_async_renice() {
@@ -379,7 +371,6 @@ prompt_pure_async_renice() {
 	if command -v ionice >/dev/null; then
 		command ionice -c 3 -p $$
 	fi
->>>>>>> master
 }
 
 prompt_pure_async_tasks() {
@@ -557,15 +548,15 @@ prompt_pure_async_callback() {
 					;;
 			esac
 			;;
-<<<<<<< HEAD
+
     prompt_pure_async_node)
       typeset -g prompt_pure_node_version=$output
       do_render=1
       ;;
-=======
+
 		prompt_pure_async_renice)
 			;;
->>>>>>> master
+
 	esac
 
 	if (( next_pending )); then
@@ -746,23 +737,14 @@ prompt_pure_setup() {
 		git:arrow            yellow
 		git:branch           green
 		git:branch:cached    red
-<<<<<<< HEAD
     git:dirty            red
-=======
 		git:action           242
-		git:dirty            218
->>>>>>> master
 		host                 242
 		path                 cyan
 		prompt:error         red
-<<<<<<< HEAD
 		prompt:success       yellow
-		user                 magenta
-=======
-		prompt:success       magenta
 		prompt:continuation  242
-		user                 242
->>>>>>> master
+		user                 magenta
 		user:root            default
 		virtualenv           242
     node:version         green
