@@ -4,6 +4,34 @@
 
 <img src="screenshot.png" width="864">
 
+<br>
+
+---
+
+<div align="center">
+	<p>
+		<p>
+			<sup>
+				<a href="https://github.com/sponsors/sindresorhus">Sindre's open source work is supported by the community</a>
+			</sup>
+		</p>
+		<sup>Special thanks to:</sup>
+		<br>
+		<br>
+		<a href="https://github.com/botpress/botpress">
+			<img src="https://sindresorhus.com/assets/thanks/botpress-logo.svg" width="260" alt="Botpress">
+		</a>
+		<br>
+		<sub><b>Botpress is an open-source conversational assistant creation platform.</b></sub>
+		<br>
+		<sub>They <a href="https://github.com/botpress/botpress/blob/master/.github/CONTRIBUTING.md">welcome contributions</a> from anyone, whether you're into machine learning,<br>want to get started in open-source, or just have an improvement idea.</sub>
+		<br>
+	</p>
+</div>
+
+---
+
+<br>
 
 ## Overview
 
@@ -37,35 +65,13 @@ That's it. Skip to [Getting started](#getting-started).
 
 ### Manually
 
-1. Either…
-  - Clone this repo
-  - add it as a submodule, or
-  - just download [`pure.zsh`](pure.zsh) and [`async.zsh`](async.zsh)
-
-2. Symlink `pure.zsh` to somewhere in [`$fpath`](https://www.refining-linux.org/archives/46-ZSH-Gem-12-Autoloading-functions.html) with the name `prompt_pure_setup`.
-
-3. Symlink `async.zsh` in `$fpath` with the name `async`.
-
-#### Example
-
-```console
-$ ln -s "$PWD/pure.zsh" /usr/local/share/zsh/site-functions/prompt_pure_setup
-$ ln -s "$PWD/async.zsh" /usr/local/share/zsh/site-functions/async
-```
-*Run `echo $fpath` to see possible locations.*
-
-For a user-specific installation (which would not require escalated privileges), simply add a directory to `$fpath` for that user:
+1. Clone this repo somewhere. Here we'll use `$HOME/.zsh/pure`.
+2. Add the path of the cloned repo to `$fpath` in `$HOME/.zshrc`.
 
 ```sh
-# .zshenv or .zshrc
-fpath=("$HOME/.zfunctions" $fpath)
-```
-
-Then install the theme there:
-
-```console
-$ ln -s "$PWD/pure.zsh" "$HOME/.zfunctions/prompt_pure_setup"
-$ ln -s "$PWD/async.zsh" "$HOME/.zfunctions/async"
+mkdir -p "$HOME/.zsh"
+git clone https://github.com/sindresorhus/pure.git "$HOME/.zsh/pure"
+fpath+=("$HOME/.zsh/pure")
 ```
 
 
@@ -106,10 +112,13 @@ Colors can be changed by using [`zstyle`](http://zsh.sourceforge.net/Doc/Release
 - `git:arrow` (cyan) - For `PURE_GIT_UP_ARROW` and `PURE_GIT_DOWN_ARROW`.
 - `git:branch` (242) - The name of the current branch when in a Git repository.
 - `git:branch:cached` (red) - The name of the current branch when the data isn't fresh.
+- `git:action` (242) - The current action in progress (cherry-pick, rebase, etc.) when in a Git repository.
+- `git:dirty` (218) - The asterisk showing the branch is dirty.
 - `host` (242) - The hostname when on a remote machine.
 - `path` (blue) - The current path, for example, `PWD`.
 - `prompt:error` (red) - The `PURE_PROMPT_SYMBOL` when the previous command has *failed*.
 - `prompt:success` (magenta) - The `PURE_PROMPT_SYMBOL` when the previous command has *succeded*.
+- `prompt:continuation` (242) - The color for showing the state of the parser in the continuation prompt (PS2). It's the pink part in [this screenshot](https://user-images.githubusercontent.com/147409/70068574-ebc74800-15f8-11ea-84c0-8b94a4b57ff4.png), it appears in the same spot as `virtualenv`. You could for example matching both colors so that Pure has a uniform look.
 - `user` (242) - The username when on remote machine.
 - `user:root` (default) - The username when the user is root.
 - `virtualenv` (242) - The name of the Python `virtualenv` when in use.
@@ -117,17 +126,19 @@ Colors can be changed by using [`zstyle`](http://zsh.sourceforge.net/Doc/Release
 The following diagram shows where each color is applied on the prompt:
 
 ```
-path
-|          git:branch
-|          |       git:arrow
-|          |       |        host
-|          |       |        |
-~/dev/pure master* ⇡ zaphod@heartofgold  42s
-venv ❯               |                   |
-|    |               |                   execution_time
-|    |               user
-|    prompt
-virtualenv
+┌───────────────────────────────────────────── path
+│          ┌────────────────────────────────── git:branch
+│          │      ┌─────────────────────────── git:action
+|          |      |       ┌─────────────────── git:dirty
+│          │      │       │ ┌───────────────── git:arrow
+│          │      │       │ │        ┌──────── host
+│          │      │       │ │        │
+~/dev/pure master|rebase-i* ⇡ zaphod@heartofgold 42s
+venv ❯                        │                  │
+│    │                        │                  └───── execution_time
+│    │                        └──────────────────────── user
+│    └───────────────────────────────────────────────── prompt
+└────────────────────────────────────────────────────── virtualenv (or prompt:continuation)
 ```
 
 ### RGB colors
