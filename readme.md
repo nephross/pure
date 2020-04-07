@@ -66,14 +66,17 @@ That's it. Skip to [Getting started](#getting-started).
 ### Manually
 
 1. Clone this repo somewhere. Here we'll use `$HOME/.zsh/pure`.
-2. Add the path of the cloned repo to `$fpath` in `$HOME/.zshrc`.
 
 ```sh
 mkdir -p "$HOME/.zsh"
 git clone https://github.com/sindresorhus/pure.git "$HOME/.zsh/pure"
-fpath+=("$HOME/.zsh/pure")
 ```
 
+2. Add the path of the cloned repo to `$fpath` in `$HOME/.zshrc`.
+```sh
+# .zshrc
+fpath+=$HOME/.zsh/pure
+```
 
 ## Getting started
 
@@ -98,7 +101,11 @@ prompt pure
 | **`PURE_PROMPT_VICMD_SYMBOL`**   | Defines the prompt symbol used when the `vicmd` keymap is active (VI-mode).                    | `❮`            |
 | **`PURE_GIT_DOWN_ARROW`**        | Defines the git down arrow symbol.                                                             | `⇣`            |
 | **`PURE_GIT_UP_ARROW`**          | Defines the git up arrow symbol.                                                               | `⇡`            |
+| **`PURE_GIT_STASH_SYMBOL`**      | Defines the git stash symbol.                                                                  | `≡`            |
 
+Showing git stash status as part of the prompt is not activated by default. To activate this you'll need to opt in via `zstyle`:
+
+`zstyle :prompt:pure:git:stash show yes`
 
 ## Colors
 
@@ -110,6 +117,7 @@ As explained in ZSH's [manual](http://zsh.sourceforge.net/Doc/Release/Zsh-Line-E
 Colors can be changed by using [`zstyle`](http://zsh.sourceforge.net/Doc/Release/Zsh-Modules.html#The-zsh_002fzutil-Module) with a pattern of the form `:prompt:pure:$color_name` and style `color`. The color names, their default, and what part they affect are:
 - `execution_time` (yellow) - The execution time of the last command when exceeding `PURE_CMD_MAX_EXEC_TIME`.
 - `git:arrow` (cyan) - For `PURE_GIT_UP_ARROW` and `PURE_GIT_DOWN_ARROW`.
+- `git:stash` (cyan) - For `PURE_GIT_STASH_SYMBOL`.
 - `git:branch` (242) - The name of the current branch when in a Git repository.
 - `git:branch:cached` (red) - The name of the current branch when the data isn't fresh.
 - `git:action` (242) - The current action in progress (cherry-pick, rebase, etc.) when in a Git repository.
@@ -129,11 +137,12 @@ The following diagram shows where each color is applied on the prompt:
 ┌───────────────────────────────────────────── path
 │          ┌────────────────────────────────── git:branch
 │          │      ┌─────────────────────────── git:action
-|          |      |       ┌─────────────────── git:dirty
+│          │      │       ┌─────────────────── git:dirty
 │          │      │       │ ┌───────────────── git:arrow
-│          │      │       │ │        ┌──────── host
-│          │      │       │ │        │
-~/dev/pure master|rebase-i* ⇡ zaphod@heartofgold 42s
+│          │      │       │ │ ┌─────────────── git:stash
+│          │      │       │ │ │        ┌────── host
+│          │      │       │ │ │        │
+~/dev/pure master|rebase-i* ⇡ ≡ zaphod@heartofgold 42s
 venv ❯                        │                  │
 │    │                        │                  └───── execution_time
 │    │                        └──────────────────────── user
@@ -170,6 +179,9 @@ zstyle :prompt:pure:path color white
 # change the color for both `prompt:success` and `prompt:error`
 zstyle ':prompt:pure:prompt:*' color cyan
 
+# turn on git stash status
+zstyle :prompt:pure:git:stash show yes
+
 prompt pure
 ```
 
@@ -202,9 +214,7 @@ Add `prompt pure` to your `~/.zpreztorc`.
 
 ### [zim](https://github.com/Eriner/zim)
 
-Pure is bundled with Zim. No need to install it.
-
-Set `zprompt_theme='pure'` in `~/.zimrc`.
+Add `zmodule sindresorhus/pure --source async.zsh --source pure.zsh` to your `.zimrc` and run `zimfw install`.
 
 ### [antigen](https://github.com/zsh-users/antigen)
 
@@ -233,13 +243,13 @@ zplug mafredri/zsh-async, from:github
 zplug sindresorhus/pure, use:pure.zsh, from:github, as:theme
 ```
 
-### [zplugin](https://github.com/zdharma/zplugin)
+### [zinit](https://github.com/zdharma/zinit)
 
 Update your `.zshrc` file with the following two lines (order matters):
 
 ```sh
-zplugin ice pick"async.zsh" src"pure.zsh"
-zplugin light sindresorhus/pure
+zinit ice compile'(pure|async).zsh' pick'async.zsh' src'pure.zsh'
+zinit light sindresorhus/pure
 ```
 
 
